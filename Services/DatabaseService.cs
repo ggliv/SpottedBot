@@ -18,26 +18,26 @@ public class DatabaseService(IConfiguration config)
         command.CommandText =
             """
             CREATE TABLE IF NOT EXISTS spots (
-                            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                            guild TEXT NOT NULL,
-                            spotter TEXT NOT NULL,
-                            spotted TEXT NOT NULL,
-                            image TEXT NOT NULL,
-                            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-                          )
+              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+              guild TEXT NOT NULL,
+              spotter TEXT NOT NULL,
+              spotted TEXT NOT NULL,
+              image TEXT NOT NULL,
+              timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
             """;
         await command.ExecuteNonQueryAsync();
 
         command.CommandText =
             """
             CREATE TABLE IF NOT EXISTS guilds (
-                            id TEXT NOT NULL PRIMARY KEY,
-                            spotted_channel TEXT,
-                            spotted_role TEXT,
-                            season_name TEXT,
-                            season_start DATETIME,
-                            season_end DATETIME
-                          )
+               id TEXT NOT NULL PRIMARY KEY,
+               spotted_channel TEXT,
+               spotted_role TEXT,
+               season_name TEXT,
+               season_start DATETIME,
+               season_end DATETIME
+            )
             """;
         await command.ExecuteNonQueryAsync();
     }
@@ -67,7 +67,10 @@ public class DatabaseService(IConfiguration config)
 
             while (reader.Read())
                 await fs.WriteLineAsync(
-                    $"{reader.GetString(2)},{reader.GetString(3)},{reader.GetString(4)},{reader.GetDateTime(5)}");
+                    $"{reader.GetString(2)}," +
+                    $"{reader.GetString(3)}," +
+                    $"{reader.GetString(4)}," +
+                    $"{reader.GetDateTime(5)}");
 
             return tempFile;
         }
@@ -83,8 +86,15 @@ public class DatabaseService(IConfiguration config)
         await connection.OpenAsync();
 
         var command = connection.CreateCommand();
-        command.CommandText =
-            $"WITH guild_spots AS (SELECT * FROM spots WHERE guild={guild.Id}) SELECT player FROM (SELECT spotter AS player FROM guild_spots UNION SELECT spotted AS player FROM guild_spots)";
+        command.CommandText = $"""
+                               WITH guild_spots AS (SELECT * FROM spots WHERE guild={guild.Id})
+                               SELECT player
+                               FROM (
+                                 SELECT spotter AS player FROM guild_spots
+                                 UNION
+                                 SELECT spotted AS player FROM guild_spots
+                               )
+                               """;
         await using var reader = await command.ExecuteReaderAsync();
         List<string> players = [];
         while (reader.Read()) players.Add(reader.GetString(0));
@@ -154,8 +164,13 @@ public class DatabaseService(IConfiguration config)
         await using var connection = new SqliteConnection($"Data Source={config["db_path"]}");
         await connection.OpenAsync();
         var command = connection.CreateCommand();
-        command.CommandText =
-            $"INSERT INTO spots (guild, spotter, spotted, image) VALUES ('{guildId}', '{spotterId}', '{spottedId}', '{imageUrl}')";
+        command.CommandText = $"""
+                               INSERT INTO spots (
+                                 guild, spotter, spotted, image
+                               ) VALUES (
+                                 '{guildId}', '{spotterId}', '{spottedId}', '{imageUrl}'
+                               )
+                               """;
         await command.ExecuteNonQueryAsync();
     }
 
