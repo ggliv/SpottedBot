@@ -6,7 +6,7 @@ public static class Extensions
 {
     public static bool IsValidSpot(this IUser user, IUser? spotter = null)
     {
-        return true;
+        // TODO
         return !(user.IsBot || user.IsWebhook || user.Equals(spotter));
     }
 }

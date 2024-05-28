@@ -13,11 +13,13 @@ public class RulesChecker(DatabaseService databaseService)
 
     private static bool IsTagBack(IUser spotter, IUser spotted)
     {
+        // TODO
         return false;
     }
 
     private static bool IsAlreadySpottedToday(IUser spotter, IUser spotted)
     {
+        // TODO
         return false;
     }
 }

@@ -63,6 +63,7 @@ public class StatsModule(DatabaseService databaseService) : InteractionModuleBas
             place += 1;
         }
 
+        // TODO make this look nicer
         await RespondAsync(leaderboardMarkdown.ToString(), allowedMentions: AllowedMentions.None);
     }
 }

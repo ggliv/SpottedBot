@@ -12,6 +12,7 @@ public partial class PlayerModule(DatabaseService databaseService) : Interaction
     [SlashCommand("info", "Get information about the rules, the bot, and more")]
     public async Task Info()
     {
+        // TODO
     }
 
     [SlashCommand("spot", "Spot another player")]

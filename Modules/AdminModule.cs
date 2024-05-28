@@ -34,15 +34,18 @@ public class AdminModule(DatabaseService databaseService) : InteractionModuleBas
     [SlashCommand("new_season", "Start a new spotted season in this guild")]
     public async Task NewSeason(string startTime)
     {
+        // TODO
     }
 
     [SlashCommand("set_channel", "Set the channel that spotted commands are allowed to be sent in")]
     public async Task SetChannel()
     {
+        // TODO
     }
 
     [SlashCommand("set_role", "Set the role that spotted participants are required to have")]
     public async Task SetRole()
     {
+        // TODO
     }
 }

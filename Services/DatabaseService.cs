@@ -9,6 +9,9 @@ public class DatabaseService(IConfiguration config)
     private const string SqliteCountSpotter = "SELECT COUNT(*) FROM spots WHERE guild=@guildId AND spotter=@userId";
     private const string SqliteCountSpotted = "SELECT COUNT(*) FROM spots WHERE guild=@guildId AND spotted=@userId";
 
+    /// <summary>
+    /// Create the database for this application if it doesn't already exist.
+    /// </summary>
     public async Task EnsureDatabaseExists()
     {
         await using var connection = new SqliteConnection($"Data Source={config["db_path"]}");
@@ -43,11 +46,11 @@ public class DatabaseService(IConfiguration config)
     }
 
     /// <summary>
-    ///     Dump the database's records for the given server to a local file and return that file's path.
+    /// Dump the database's records for the given server to a local file and return that file's path.
     /// </summary>
     /// <remarks>
-    ///     This method does nothing to the file after returning. Users are responsible for deleting the provided file after
-    ///     use.
+    /// This method does nothing to the file after returning. Users are responsible for deleting the provided file after
+    /// use.
     /// </remarks>
     /// <param name="guild">The guild to dump the records for.</param>
     /// <returns>A path to the file's location on the local filesystem, or null if the dump could not be made.</returns>
@@ -80,6 +83,11 @@ public class DatabaseService(IConfiguration config)
         }
     }
 
+    /// <summary>
+    /// Get the players who currently have a score in a guild.
+    /// </summary>
+    /// <param name="guild">The guild to get the players of</param>
+    /// <returns>Enumeration of the players who have a score in the <paramref name="guild"/></returns>
     public async Task<IEnumerable<string>> GetPlayers(IGuild guild)
     {
         await using var connection = new SqliteConnection($"Data Source={config["db_path"]}");
@@ -101,6 +109,11 @@ public class DatabaseService(IConfiguration config)
         return players;
     }
 
+    /// <summary>
+    /// Get the scores currently set in a given guild.
+    /// </summary>
+    /// <param name="guild">The guild to get the scores for</param>
+    /// <returns>Dictionary associating user IDs (key) to scores (value)</returns>
     public async Task<Dictionary<string, long>> GetScores(IGuild guild)
     {
         await using var connection = new SqliteConnection($"Data Source={config["db_path"]}");
@@ -126,7 +139,7 @@ public class DatabaseService(IConfiguration config)
     }
 
     /// <summary>
-    ///     Fetch from the database the number of times a user has spotted someone else in the provided guild.
+    /// Fetch from the database the number of times a user has spotted someone else in the provided guild.
     /// </summary>
     /// <param name="guild">The guild context.</param>
     /// <param name="user">The user to count the spots of.</param>
@@ -143,11 +156,11 @@ public class DatabaseService(IConfiguration config)
     }
 
     /// <summary>
-    ///     Fetch from the database the number of times a user has been spotted by someone else in the provided guild.
+    /// Fetch from the database the number of times a user has been spotted by someone else in the provided guild.
     /// </summary>
-    /// <param name="guild">The guild context.</param>
-    /// <param name="user">The user to count the spots of.</param>
-    /// <returns>Number of times <paramref name="user" /> has been spotted in <paramref name="guild" />.</returns>
+    /// <param name="guild">The guild context</param>
+    /// <param name="user">The user to count the spots of</param>
+    /// <returns>Number of times <paramref name="user" /> has been spotted in <paramref name="guild" /></returns>
     public async Task<long> GetSpottedCount(IGuild guild, IUser user)
     {
         await using var connection = new SqliteConnection($"Data Source={config["db_path"]}");
@@ -159,6 +172,13 @@ public class DatabaseService(IConfiguration config)
         return (long)(await command.ExecuteScalarAsync() ?? 0);
     }
 
+    /// <summary>
+    /// Log a single spot to the database.
+    /// </summary>
+    /// <param name="guildId">The guild this spot should be recorded under</param>
+    /// <param name="spotterId">The user ID of the player who spotted the other player</param>
+    /// <param name="spottedId">The user ID of the player who got spotted</param>
+    /// <param name="imageUrl">Link to the image certifying the spot</param>
     private async Task LogSpot(ulong guildId, ulong spotterId, ulong spottedId, string imageUrl)
     {
         await using var connection = new SqliteConnection($"Data Source={config["db_path"]}");
@@ -174,6 +194,13 @@ public class DatabaseService(IConfiguration config)
         await command.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// Log a new spot event to the database.
+    /// </summary>
+    /// <param name="guild">The guild where the spots took place</param>
+    /// <param name="spotter">The player who spotted the other people</param>
+    /// <param name="spots">The players who got spotted by the <paramref name="spotter"/></param>
+    /// <param name="image">The image of the spot</param>
     public async Task LogSpots(IGuild guild, IUser spotter, IEnumerable<IUser> spots, IAttachment image)
     {
         foreach (var spot in spots) await LogSpot(guild.Id, spotter.Id, spot.Id, image.Url);
